@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-
+//designate the type of tile
 public enum TileType
 {
     Blue,
@@ -40,19 +40,22 @@ public class TileBehaviour : MonoBehaviour
     {
         SpriteImage = GetComponentInChildren<SpriteRenderer>();
         raycastSize = SpriteImage.bounds.size.x;
+        //play our spawn in animation
         Animator.speed = Random.Range(0.8f, 1.2f);
         Animator.SetTrigger("Spawn");
     }
 
+    //play the spawn animation
     public void SpawnInAnimation()
     {
         Animator.SetTrigger("Spawn");
     }
-
-    public void MoveDownAnimation()
-    {
-        Animator.SetTrigger("MoveDown");
-    }
+    ////not using as many issues
+    //public void MoveDownAnimation()
+    //{
+    //    Animator.SetTrigger("MoveDown");
+    //}
+    //select out tile
     private void Select()
     {
         isSelected = true;
@@ -60,6 +63,7 @@ public class TileBehaviour : MonoBehaviour
         previousSelected = gameObject.GetComponent<TileBehaviour>();
     }
 
+    //de select our tile
     private void Deselect()
     {
         isSelected = false;
@@ -68,6 +72,7 @@ public class TileBehaviour : MonoBehaviour
     }
     void OnMouseDown()
     {
+        //make sure we are able to select the tile
         if (SpriteImage.sprite == null || BoardManager.Instance.IsShifting 
             || IsInMenu || tileType == TileType.Grey)
         {
@@ -80,21 +85,22 @@ public class TileBehaviour : MonoBehaviour
         }
         else
         {
-            if (previousSelected == null)
+            if (previousSelected == null) //inital select of first tile
             { 
                 Select();
             }
-            else
+            else //selecting the second tile to move to
             {
-                if (GetAllAdjacentTiles().Contains(previousSelected.gameObject))
+                if (GetAllAdjacentTiles().Contains(previousSelected.gameObject)) //is the tile we are trying to move to adjacent to us
                 {
                     SwapSprite(previousSelected.SpriteImage);
                     previousSelected.ClearAllMatches();
                     previousSelected.Deselect();
                     ClearAllMatches();
+                    //apply our move since it was valid
                     GameUI.UseAMove();
                 }
-                else
+                else //not valid move
                 { 
                     previousSelected.GetComponent<TileBehaviour>().Deselect();
                     Select();
@@ -104,6 +110,7 @@ public class TileBehaviour : MonoBehaviour
         }
     }
 
+ 
     public void SwapSprite(SpriteRenderer render2)
     { 
         if (SpriteImage.sprite == render2.sprite)
@@ -143,6 +150,7 @@ public class TileBehaviour : MonoBehaviour
         RaycastHit hit;
         Ray ray = new Ray(transform.position, castDir);
         Physics.Raycast(ray, out hit, raycastSize);
+        //keep checking if we hit an correct adjacent tile to add to our list
         while (hit.collider != null && hit.collider.GetComponent<SpriteRenderer>().sprite == SpriteImage.sprite)
         { 
             matchingTiles.Add(hit.collider.gameObject);
@@ -157,9 +165,10 @@ public class TileBehaviour : MonoBehaviour
         List<GameObject> matchingTiles = new List<GameObject>(); 
         for (int i = 0; i < paths.Length; i++) 
         {
+            //populate our matches
             matchingTiles.AddRange(FindMatch(paths[i]));
         }
-        if (matchingTiles.Count >= 2) 
+        if (matchingTiles.Count >= 2) //check if match is of valid size
         {
             for (int i = 0; i < matchingTiles.Count; i++)
             {
@@ -167,7 +176,7 @@ public class TileBehaviour : MonoBehaviour
             }
             matchFound = true;
 
-            GameUI.IncreaseScore(50 * matchingTiles.Count);
+            GameUI.IncreaseScore(50 * matchingTiles.Count); //increase score based on the match
         }
     }
 
@@ -177,7 +186,7 @@ public class TileBehaviour : MonoBehaviour
     {
         if (SpriteImage.sprite == null)
             return;
-
+        //check matches
         ClearMatch(new Vector3[2] { Vector3.left, Vector3.right });
         ClearMatch(new Vector3[2] { Vector3.up, Vector3.down });
         if (matchFound)
@@ -185,7 +194,7 @@ public class TileBehaviour : MonoBehaviour
             SpriteImage.sprite = null;
             matchFound = false;
 
-
+            //handle cleared tiles
             BoardManager.Instance.FindEmptyTiles();
 
             GameUI.PlayMatchSound();

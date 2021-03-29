@@ -67,7 +67,7 @@ public class BoardManager : MonoBehaviour
         Sprite[] previousLeft = new Sprite[ySize];
         Sprite previousBelow = null;
 
-
+        //populate our tiles
         for (int x = 0; x < xSize; x++)
         {      
             for (int y = 0; y < ySize; y++)
@@ -79,22 +79,23 @@ public class BoardManager : MonoBehaviour
 
                 List<Sprite> possibleCharacters = new List<Sprite>();
                 possibleCharacters.AddRange(icons);
-
+                //prevent any matches from forming
                 possibleCharacters.Remove(previousLeft[y]); 
                 possibleCharacters.Remove(previousBelow);
-
+                //apply the new choice
                 int choice = Random.Range(0, possibleCharacters.Count);
                 Sprite newSprite = possibleCharacters[choice];
                 newTile.GetComponentInChildren<SpriteRenderer>().sprite = newSprite;
                 previousLeft[y] = newSprite;
                 previousBelow = newSprite;
-
+                //set the tile type
                 newTile.GetComponentInChildren<TileBehaviour>().tileType = (TileType)icons.IndexOf(newSprite);
                 ;
             }
         }
     }
 
+    //manages the coroutine for finding empty tiles to prevent it from double counting
     public void FindEmptyTiles()
     {
         if (FindNullTilesCoroutine != null)
@@ -107,17 +108,19 @@ public class BoardManager : MonoBehaviour
     private IEnumerator FindNullTiles()
     {
         numColsToShift = 0;
+        //check if there is a match
         for (int x = 0; x < xSize; x++)
         {
             for (int y = 0; y < ySize; y++)
             {
-                if (tiles[x, y].GetComponentInChildren<SpriteRenderer>().sprite == null)
+                if (tiles[x, y].GetComponentInChildren<SpriteRenderer>().sprite == null) //found a match
                 {
                     numColsToShift++;
-
+                    //begin shifting
+                    IsShifting = true;
                     yield return new WaitForSeconds(moveTileDelay);
-                    ShiftColumnDown(x, y);
-                    
+                    ShiftColumnDown(x, y); //shift all our tiles down
+                    IsShifting = false;
                     break;
                 }
             }
@@ -126,7 +129,7 @@ public class BoardManager : MonoBehaviour
             yield return new WaitForSeconds(0.1f);
 
         yield return new WaitForEndOfFrame();
-
+        //check for any new matches formed
         for (int x = 0; x < xSize; x++)
         {
             for (int y = 0; y < ySize; y++)
@@ -137,14 +140,15 @@ public class BoardManager : MonoBehaviour
 
     }
 
+    //shifts the colums down until there are no more empty tiles
     private void ShiftColumnDown(int x, int yStart)
     {
         int yPos = yStart;
-        IsShifting = true;
         List<SpriteRenderer> renders = new List<SpriteRenderer>();
         bool foundNull = true;
         while (foundNull)
         {
+            //assume we didnt find a empty
             foundNull = false;
             //populate the renders
             for (int y = yPos; y < ySize; y++)
@@ -153,10 +157,11 @@ public class BoardManager : MonoBehaviour
                 renders.Add(render);
 
             }
-
+            //check if the base is an empty tile
             if (renders[0].sprite == null)
             {
                 foundNull = true;
+                //shift all tiles down 1
                 ShiftTilesDown1(x, renders);
                 for (int y = 0; y < renders.Count; y++)
                 {
@@ -167,49 +172,43 @@ public class BoardManager : MonoBehaviour
                         break;
                     }
                 }
+                //so we can repopulate if the next empty if father above and not adjacent
                 renders.Clear();
             }
         }
-        IsShifting = false;
         numColsToShift--;
     }
     private void ShiftTilesDown1(int x, List<SpriteRenderer> renders)
     {
+        //mode through the different sprites and shift them down one
         for (int k = 0; k < renders.Count - 1; k++)
         {
             renders[k].sprite = renders[k + 1].sprite;
+            //set tile type
             renders[k].gameObject.GetComponent<TileBehaviour>().tileType = (TileType)icons.IndexOf(renders[k].sprite);
             if (k == renders.Count - 2)//last one in loop
             {
                 renders[k + 1].sprite = GetNewSprite(x, ySize - 1);
+                //set tile type
                 renders[k + 1].gameObject.GetComponent<TileBehaviour>().tileType = (TileType)icons.IndexOf(renders[k + 1].sprite);
 
             }
         }
+        //if it a top empty
         if (renders.Count == 1)
         {
             renders[0].sprite = GetNewSprite(x, ySize - 1);
+            //set tile type
             renders[0].gameObject.GetComponent<TileBehaviour>().tileType = (TileType)icons.IndexOf(renders[0].sprite);
         }
     }
 
+    //provide a new sprite to use 
     private Sprite GetNewSprite(int x, int y)
     {
         List<Sprite> possibleCharacters = new List<Sprite>();
         possibleCharacters.AddRange(icons);
 
-        //if (x > 0)
-        //{
-        //    possibleCharacters.Remove(tiles[x - 1, y].GetComponentInChildren<SpriteRenderer>().sprite);
-        //}
-        //if (x < xSize - 1)
-        //{
-        //    possibleCharacters.Remove(tiles[x + 1, y].GetComponentInChildren<SpriteRenderer>().sprite);
-        //}
-        //if (y > 0)
-        //{
-        //    possibleCharacters.Remove(tiles[x, y - 1].GetComponentInChildren<SpriteRenderer>().sprite);
-        //}
 
         return possibleCharacters[Random.Range(0, possibleCharacters.Count)];
     }
@@ -224,6 +223,7 @@ public class BoardManager : MonoBehaviour
             }
         }
     }
+    //set values for easy difficulty
     public void EasyDifficultyChosen()
     {
         if (tiles!= null)
@@ -232,18 +232,20 @@ public class BoardManager : MonoBehaviour
         }
         icons.Clear();
         icons.AddRange(Mastericons);
-        icons.RemoveRange(icons.Count - 3, 3);
-
+        icons.RemoveRange(icons.Count - 3, 3); //set the icons that are available
+        //recreate the board
         Vector2 offset = tile.GetComponentInChildren<SpriteRenderer>().bounds.size;
         CreateBoard(offset.x, offset.y);
         GameUI.ResetGameUI();
         GameUI.SetTargetScore(20000);
+        GameUI.SetMaxNumMoves(20);
 
         EasyButton.image.color = Color.green;
         MediumButton.image.color = Color.white;
         HardButton.image.color = Color.white;
 
     }
+    //set values for medium difficulty
     public void MediumDifficultyChosen()
     {
         if (tiles != null)
@@ -252,18 +254,20 @@ public class BoardManager : MonoBehaviour
         }
         icons.Clear();
         icons.AddRange(Mastericons);
-        icons.RemoveRange(icons.Count - 1, 1);
-
+        icons.RemoveRange(icons.Count - 1, 1);//set the icons that are available
+        //recreate the board
         Vector2 offset = tile.GetComponentInChildren<SpriteRenderer>().bounds.size;
         CreateBoard(offset.x, offset.y);
 
         GameUI.ResetGameUI();
-        GameUI.SetTargetScore(25000);
+        GameUI.SetTargetScore(7000);
+        GameUI.SetMaxNumMoves(25);
 
         EasyButton.image.color = Color.white;
         MediumButton.image.color = Color.green;
         HardButton.image.color = Color.white;
     }
+    //set values for hard difficulty
     public void HardDifficultyChosen()
     {
         if (tiles != null)
@@ -271,13 +275,14 @@ public class BoardManager : MonoBehaviour
             ClearBoard();
         }
         icons.Clear();
-        icons.AddRange(Mastericons);
-
+        icons.AddRange(Mastericons);//set the icons that are available
+        //recreate the board
         Vector2 offset = tile.GetComponentInChildren<SpriteRenderer>().bounds.size;
         CreateBoard(offset.x, offset.y);
 
         GameUI.ResetGameUI();
-        GameUI.SetTargetScore(30000);
+        GameUI.SetTargetScore(4500);
+        GameUI.SetMaxNumMoves(30);
 
         EasyButton.image.color = Color.white;
         MediumButton.image.color = Color.white;
