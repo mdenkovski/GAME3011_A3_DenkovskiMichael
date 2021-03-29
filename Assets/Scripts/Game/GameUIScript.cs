@@ -61,7 +61,7 @@ public class GameUIScript : MonoBehaviour
 
         if (NumMovesRemaining ==  0)
         {
-
+            //prevent input in the tiles
             TileBehaviour.IsInMenu = true;
             StartCoroutine(WaitForShifting());
         }
@@ -89,7 +89,6 @@ public class GameUIScript : MonoBehaviour
     {
         //game over stuff here
         GameOverPanel.SetActive(true);
-        //prevent input in the tiles
     }
 
     //enable game win
@@ -97,7 +96,6 @@ public class GameUIScript : MonoBehaviour
     {
         //game win stuff here
         WinPanel.SetActive(true);
-        //prevent input in the tiles
     }
     public void PlayMatchSound()
     {
