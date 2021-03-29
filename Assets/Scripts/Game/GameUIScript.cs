@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
 
 public class GameUIScript : MonoBehaviour
@@ -27,17 +26,9 @@ public class GameUIScript : MonoBehaviour
     [SerializeField]
     private int TargetScore;
 
-    [SerializeField]
-    private Button EasyButton;
-
-    //[SerializeField]
-    //private Button EasyButton;
-
-    //[SerializeField]
-    //private Button EasyButton;
+    
     private void Awake()
     {
-
         ResetGameUI();
         ClearedClip = GetComponent<AudioSource>();
     }

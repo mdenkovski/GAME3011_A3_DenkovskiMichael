@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class BoardManager : MonoBehaviour
 {
@@ -21,6 +22,15 @@ public class BoardManager : MonoBehaviour
     IEnumerator FindNullTilesCoroutine;
 
     GameUIScript GameUI;
+
+    [SerializeField]
+    private Button EasyButton;
+
+    [SerializeField]
+    private Button MediumButton;
+
+    [SerializeField]
+    private Button HardButton;
     private void OnEnable()
     {
         if (Instance == null)
@@ -229,6 +239,10 @@ public class BoardManager : MonoBehaviour
         GameUI.ResetGameUI();
         GameUI.SetTargetScore(20000);
 
+        EasyButton.image.color = Color.green;
+        MediumButton.image.color = Color.white;
+        HardButton.image.color = Color.white;
+
     }
     public void MediumDifficultyChosen()
     {
@@ -245,6 +259,10 @@ public class BoardManager : MonoBehaviour
 
         GameUI.ResetGameUI();
         GameUI.SetTargetScore(25000);
+
+        EasyButton.image.color = Color.white;
+        MediumButton.image.color = Color.green;
+        HardButton.image.color = Color.white;
     }
     public void HardDifficultyChosen()
     {
@@ -260,6 +278,10 @@ public class BoardManager : MonoBehaviour
 
         GameUI.ResetGameUI();
         GameUI.SetTargetScore(30000);
+
+        EasyButton.image.color = Color.white;
+        MediumButton.image.color = Color.white;
+        HardButton.image.color = Color.green;
     }
 
 }
